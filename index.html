@@ -1,431 +1,396 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tarefas Diárias</title>
+  <title>Gerenciador de Investimentos</title>
+  <!-- FontAwesome para ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    :root{
-      --bg:#0f1220; /* fundo escuro elegante */
-      --panel:#151a2f;
-      --panel-2:#101426;
-      --text:#e7eaf6;
-      --muted:#9aa3b2;
-      --accent:#6aa0ff;
-      --accent-2:#76e3b3;
-      --danger:#ff6b6b;
-      --ok:#7dd87d;
-      --shadow:0 10px 25px rgba(0,0,0,.35);
-      --radius:18px;
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #e6f0ff 20%, #ffffff 100%);
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
-      color:var(--text); background:radial-gradient(1200px 800px at 10% -10%, #1a2050 0%, transparent 60%),
-                       radial-gradient(900px 700px at 110% 10%, #0b5fc6 0%, transparent 55%),
-                       var(--bg);
-      display:flex; align-items:center; justify-content:center; padding:28px;
-    }
-    .app{width:min(980px,100%);}
-    header{
-      display:flex; gap:16px; align-items:center; justify-content:space-between; margin-bottom:12px;
-    }
-    .title{
-      display:flex; align-items:center; gap:14px;
-      padding:16px 20px; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border:1px solid rgba(255,255,255,.08); border-radius:var(--radius); box-shadow:var(--shadow);
-    }
-    .title h1{font-size:20px; line-height:1.2; margin:0}
-    .title .date{color:var(--muted); font-size:13px}
 
-    .controls{
-      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    .app-container {
+      max-width: 400px;
+      margin: auto;
+      padding: 1rem;
     }
-    .controls .group{
-      display:flex; gap:8px; background:var(--panel); border:1px solid rgba(255,255,255,.08); padding:10px; border-radius:var(--radius);
-    }
-    input[type="date"], input[type="time"], input[type="text"], select{
-      background:var(--panel-2); color:var(--text); border:1px solid rgba(255,255,255,.08); border-radius:12px;
-      padding:10px 12px; outline:none;
-    }
-    input[type="text"]{min-width:260px}
-    button{
-      background:var(--accent); color:#0b1220; border:none; padding:10px 14px; border-radius:12px; font-weight:600; cursor:pointer;
-      transition:transform .04s ease, filter .2s ease; box-shadow:var(--shadow);
-    }
-    button:hover{filter:brightness(1.08)}
-    button:active{transform:translateY(1px)}
-    .btn-light{background:#e8edff}
-    .btn-danger{background:var(--danger); color:#fff}
-    .btn-ghost{background:transparent; color:var(--text); border:1px solid rgba(255,255,255,.15)}
 
-    main{
-      margin-top:14px; padding:18px; background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
-      border:1px solid rgba(255,255,255,.08); border-radius:var(--radius); box-shadow:var(--shadow);
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .bar{
-      display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:12px;
-    }
-    .filters{display:flex; gap:8px; flex-wrap:wrap}
-    .chip{
-      padding:8px 12px; border-radius:999px; background:var(--panel-2); border:1px solid rgba(255,255,255,.12); cursor:pointer; font-size:13px;
-    }
-    .chip.active{background:var(--accent-2); color:#0a1320; border-color:transparent}
 
-    ul#list{list-style:none; margin:0; padding:0; display:grid; gap:10px}
-    .item{
-      display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center;
-      padding:12px; border-radius:14px; background:var(--panel); border:1px solid rgba(255,255,255,.08);
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
-    .drag{cursor:grab; user-select:none; font-size:18px; padding:6px 8px; opacity:.7}
-    .left{display:flex; align-items:center; gap:10px}
-    .title-text{font-weight:600}
-    .meta{font-size:12px; color:var(--muted)}
-    .done .title-text{opacity:.55; text-decoration:line-through}
-    .badge{font-size:11px; border:1px solid rgba(255,255,255,.14); padding:3px 8px; border-radius:999px; margin-left:8px}
 
-    .empty{
-      text-align:center; padding:28px; color:var(--muted); border:1px dashed rgba(255,255,255,.18); border-radius:14px;
-      background:rgba(255,255,255,.02)
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
     }
-    footer{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:14px}
 
-    @media (max-width:640px){
-      input[type="text"]{min-width:160px}
-      .item{grid-template-columns:1fr auto}
-      .drag{display:none}
+    .menu {
+      font-size: 1.5rem;
+      cursor: pointer;
     }
-  
-    /* ===== Header v2 (moderno com ícones) ===== */
-    .app-header{position:sticky; top:0; z-index:50; margin-bottom:12px}
-    .hero{
-      display:flex; align-items:center; justify-content:space-between; gap:16px;
-      padding:16px 20px; border-radius:var(--radius);
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border:1px solid rgba(255,255,255,.08); box-shadow:var(--shadow);
+
+    /* Saldo */
+    .saldo {
+      margin: 1rem 0;
     }
-    .brand{display:flex; align-items:center; gap:12px}
-    .logo{width:36px; height:36px; border-radius:12px; display:grid; place-items:center;
-      background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#0b1220; font-weight:900}
-    .brand h1{font-size:18px; margin:0}
-    .brand small{display:block; color:var(--muted); font-size:12px}
 
-    .toolbar{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
-    .icon-btn{display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px;
-      border-radius:12px; border:1px solid rgba(255,255,255,.15); background:var(--panel-2); cursor:pointer}
-    .icon-btn:hover{filter:brightness(1.08)}
-    .icon{width:18px; height:18px; display:block}
+    .saldo p {
+      margin: 0;
+      color: #666;
+    }
 
-    .subbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:10px}
-    .subbar .group{background:var(--panel);}
+    .saldo h1 {
+      color: #0044cc;
+      font-size: 2.2rem;
+      font-weight: bold;
+      margin: 0.2rem 0;
+    }
 
-    /* Tema claro */
-    [data-theme="light"]{
-      --bg:#f6f7fb; --panel:#ffffff; --panel-2:#f2f4f8; --text:#0f172a; --muted:#475569;
-      --accent:#2563eb; --accent-2:#10b981; --danger:#ef4444; --shadow:0 10px 25px rgba(15,23,42,.08);
+    /* Atalhos */
+    .atalhos {
+      display: flex;
+      justify-content: space-around;
+      margin: 1.5rem 0;
+    }
+
+    .atalho {
+      text-align: center;
+    }
+
+    .atalho .icon {
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.3rem;
+      margin: auto;
+      color: #007bff;
+    }
+
+    .atalho span {
+      font-size: 0.85rem;
+      color: #333;
+      margin-top: 0.4rem;
+      display: block;
+    }
+
+    /* Cards */
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .card p {
+      margin: 0.3rem 0;
+      color: #444;
+    }
+
+    .card p:first-child {
+      color: #666;
+      font-size: 0.95rem;
+    }
+
+    .card b {
+      color: #111;
+    }
+
+    .btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 0.4rem 1.2rem;
+      margin-top: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .verde { color: #22c55e; }
+    .aprovado { color: #22c55e; font-weight: bold; }
+
+    /* Lista Bancos */
+    .banco-list {
+      margin-top: 1.5rem;
+      background: white;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .banco-list table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .banco-list th, .banco-list td {
+      padding: 0.5rem;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+      font-size: 0.9rem;
+    }
+
+    .banco-list th {
+      color: #007bff;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+    }
+
+    .empty-msg {
+      text-align: center;
+      font-style: italic;
+      margin-top: 1rem;
+      color: #555;
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      width: 320px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      text-align: left;
+    }
+
+    .modal-content h3 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      color: #007bff;
+      font-weight: 900;
+    }
+
+    .modal-content label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 0.3rem;
+      margin-top: 1rem;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 0.5rem 0.7rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1.5px solid #ccc;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 1.8rem;
+    }
+
+    .btn-secondary {
+      background-color: #ddd;
+      color: #444;
+      border: none;
+      border-radius: 12px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <header class="app-header">
-      <div class="hero">
-        <div class="brand">
-          <div class="logo" aria-hidden="true">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6 3h12a2 2 0 0 1 2 2v14l-6-3-6 3V5a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.5"/>
-            </svg>
-          </div>
-          <div>
-            <h1>Tarefas Diárias</h1>
-            <small id="todayLabel">&nbsp;</small>
-          </div>
-        </div>
-        <div class="toolbar">
-          <button class="icon-btn" id="themeBtn" title="Alternar tema">
-            <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-              <path d="M12 3a9 9 0 1 0 9 9 6.5 6.5 0 0 1-9-9z" stroke="currentColor" stroke-width="1.5"/>
-            </svg>
-          </button>
-          <button class="icon-btn" id="topPrintBtn" title="Imprimir">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6 9V4h12v5M6 18h12v2H6v-2Zm-3-5a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v4H3v-4Z" stroke="currentColor" stroke-width="1.5"/>
-            </svg>
-          </button>
-        </div>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="user-info">
+        <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" class="avatar">
+        <span>Olá, Gustavo</span>
       </div>
-
-      <div class="subbar controls">
-        <div class="group">
-          <input type="date" id="datePicker" aria-label="Selecionar dia" />
-          <button class="btn-light" id="btnHoje" title="Ir para hoje">Hoje</button>
-        </div>
-        <div class="group">
-          <input type="time" id="timeInput" aria-label="Horário" />
-          <input type="text" id="taskInput" placeholder="Nova tarefa" aria-label="Nova tarefa" />
-          <select id="prio">
-            <option value="normal">Prioridade: Normal</option>
-            <option value="alta">Prioridade: Alta</option>
-            <option value="baixa">Prioridade: Baixa</option>
-          </select>
-          <button id="addBtn">Adicionar</button>
-        </div>
-      </div>
+      <div class="menu"><i class="fas fa-bars"></i></div>
     </header>
 
-    <main>
-      <div class="bar">
-        <div class="filters" role="tablist" aria-label="Filtro de tarefas">
-          <button class="chip active" data-filter="todas" role="tab">Todas</button>
-          <button class="chip" data-filter="pendentes" role="tab">Pendentes</button>
-          <button class="chip" data-filter="concluidas" role="tab">Concluídas</button>
-          <button class="chip" data-filter="alta" role="tab">Alta</button>
-        </div>
-        <div class="counters"><span id="countPend"></span> • <span id="countAll"></span></div>
-      </div>
+    <!-- Saldo -->
+    <section class="saldo">
+      <p>Saldo atual</p>
+      <h1 id="totalInvestido">R$ 0,00</h1>
+    </section>
 
-      <ul id="list" aria-live="polite"></ul>
-      <div class="empty" id="empty">Nenhuma tarefa para este dia.</div>
+    <!-- Atalhos -->
+    <section class="atalhos">
+      <div class="atalho"><div class="icon"><i class="fas fa-search"></i></div><span>Lente Neon</span></div>
+      <div class="atalho"><div class="icon"><i class="fas fa-paper-plane"></i></div><span>Enviar Pix</span></div>
+      <div class="atalho"><div class="icon"><i class="fas fa-credit-card"></i></div><span>Pagar</span></div>
+      <div class="atalho"><div class="icon"><i class="fas fa-bolt"></i></div><span>Pix</span></div>
+    </section>
 
-      <footer>
-        <div>
-          <button class="btn-ghost" id="clearDone">Limpar concluídas</button>
-          <button class="btn-ghost" id="exportBtn" title="Exportar JSON">Exportar</button>
-          <input type="file" id="importFile" accept="application/json" hidden />
-          <button class="btn-ghost" id="importBtn" title="Importar JSON">Importar</button>
-        </div>
-        <div>
-          <button class="btn-danger" id="clearDay">Apagar dia</button>
-          <button class="btn-light" id="printBtn">Imprimir</button>
-        </div>
-      </footer>
-    </main>
+    <!-- Cards -->
+    <div class="card">
+      <p><b>Cartão de Crédito</b></p>
+      <p>Fatura fechada <b id="valorAtual">R$ 0,00</b></p>
+      <button class="btn">Adiantar</button>
+      <p>Limite disponível: <span class="verde" id="lucroPrejuizo">R$ 0,00</span></p>
+    </div>
+
+    <div class="card">
+      <p><b>Investimentos</b></p>
+      <p>Guardado <b id="investimentos">R$ 0,00</b></p>
+      <button class="btn" id="adicionarBancoBtn">Guardar</button>
+    </div>
+
+    <div class="card">
+      <p><b>Empréstimo</b></p>
+      <p class="aprovado">Aprovado</p>
+      <p>Pedido aprovado <b>R$ 24.500,00</b></p>
+      <a href="#" style="color:#007bff;font-weight:bold;text-decoration:none;">Ver mais</a>
+    </div>
+
+    <!-- Lista Bancos -->
+    <div class="banco-list" id="bancoListContainer">
+      <h3>Lista de Bancos</h3>
+      <table id="bancoTable">
+        <thead>
+          <tr>
+            <th>Banco</th>
+            <th>Total Investido</th>
+            <th>Valor Atual</th>
+            <th>Lucro</th>
+            <th>%</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p class="empty-msg" id="emptyMsg">Nenhum banco cadastrado ainda.</p>
+    </div>
   </div>
 
-  <template id="itemTmpl">
-    <li class="item" draggable="true">
-      <div class="drag" title="Arraste para reordenar">⋮⋮</div>
-      <div class="left">
-        <input type="checkbox" class="chk" />
-        <div>
-          <div class="title-text"></div>
-          <div class="meta"></div>
+  <!-- Modal -->
+  <div class="modal" id="modalBanco">
+    <div class="modal-content">
+      <h3>Adicionar Banco</h3>
+      <form id="formBanco">
+        <label for="nomeBanco">Nome do Banco</label>
+        <input type="text" id="nomeBanco" name="nomeBanco" required minlength="2" />
+
+        <label for="totalInvestidoInput">Total Investido (R$)</label>
+        <input type="number" id="totalInvestidoInput" name="totalInvestido" required min="0" step="0.01" />
+
+        <label for="valorAtualInput">Valor Atual (R$)</label>
+        <input type="number" id="valorAtualInput" name="valorAtual" required min="0" step="0.01" />
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="cancelBtn">Cancelar</button>
+          <button type="submit" class="btn">Salvar</button>
         </div>
-      </div>
-      <div class="actions">
-        <button class="btn-ghost editBtn">Editar</button>
-        <button class="btn-ghost delBtn">Excluir</button>
-      </div>
-    </li>
-  </template>
+      </form>
+    </div>
+  </div>
 
   <script>
-    // ===== Utilidades de data =====
-    const fmtKey = d => d.toISOString().slice(0,10);
-    const fmtBR = d => d.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
+    let bancos = [];
 
-    // ===== Estado =====
-    const state = { date: new Date(), filter:'todas', tasks: [] };
-    const el = {
-      todayLabel: document.getElementById('todayLabel'),
-      datePicker: document.getElementById('datePicker'),
-      taskInput: document.getElementById('taskInput'),
-      timeInput: document.getElementById('timeInput'),
-      prio: document.getElementById('prio'),
-      addBtn: document.getElementById('addBtn'),
-      list: document.getElementById('list'),
-      empty: document.getElementById('empty'),
-      chips: Array.from(document.querySelectorAll('.chip')),
-      countAll: document.getElementById('countAll'),
-      countPend: document.getElementById('countPend'),
-      clearDone: document.getElementById('clearDone'),
-      clearDay: document.getElementById('clearDay'),
-      btnHoje: document.getElementById('btnHoje'),
-      printBtn: document.getElementById('printBtn'),
-      exportBtn: document.getElementById('exportBtn'),
-      importBtn: document.getElementById('importBtn'),
-      importFile: document.getElementById('importFile'),
-      tmpl: document.getElementById('itemTmpl'),
-      themeBtn: document.getElementById('themeBtn'),
-      topPrintBtn: document.getElementById('topPrintBtn') };
+    const totalInvestidoEl = document.getElementById('totalInvestido');
+    const valorAtualEl = document.getElementById('valorAtual');
+    const lucroPrejuizoEl = document.getElementById('lucroPrejuizo');
+    const investimentosEl = document.getElementById('investimentos');
+    const bancoTableBody = document.querySelector('#bancoTable tbody');
+    const modalBanco = document.getElementById('modalBanco');
+    const adicionarBancoBtn = document.getElementById('adicionarBancoBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const formBanco = document.getElementById('formBanco');
+    const emptyMsg = document.getElementById('emptyMsg');
 
-    // ===== Persistência =====
-    function load(date){
-      const key = `tasks:${fmtKey(date)}`;
-      try{ state.tasks = JSON.parse(localStorage.getItem(key)) || []; }
-      catch{ state.tasks = []; }
-      render();
-    }
-    function save(){
-      const key = `tasks:${fmtKey(state.date)}`;
-      localStorage.setItem(key, JSON.stringify(state.tasks));
+    function formatarMoeda(valor) {
+      return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
-    // ===== Renderização =====
-    function render(){
-      el.todayLabel.textContent = fmtBR(state.date);
-      el.datePicker.value = fmtKey(state.date);
+    function atualizarResumo() {
+      let totalInvestido = bancos.reduce((acc, b) => acc + b.totalInvestido, 0);
+      let valorAtual = bancos.reduce((acc, b) => acc + b.valorAtual, 0);
+      let lucro = valorAtual - totalInvestido;
 
-      // Filtro
-      let view = state.tasks.slice();
-      if(state.filter==='pendentes') view = view.filter(t=>!t.done);
-      if(state.filter==='concluidas') view = view.filter(t=>t.done);
-      if(state.filter==='alta') view = view.filter(t=>t.prio==='alta');
+      totalInvestidoEl.textContent = formatarMoeda(totalInvestido);
+      valorAtualEl.textContent = formatarMoeda(valorAtual);
+      lucroPrejuizoEl.textContent = formatarMoeda(lucro);
+      investimentosEl.textContent = formatarMoeda(valorAtual);
+    }
 
-      // Contadores
-      el.countAll.textContent = `Total: ${state.tasks.length}`;
-      el.countPend.textContent = `Pendentes: ${state.tasks.filter(t=>!t.done).length}`;
-
-      // Lista
-      el.list.innerHTML = '';
-      if(view.length===0){ el.empty.style.display='block'; }
-      else { el.empty.style.display='none'; }
-
-      view.forEach(task=>{
-        const li = el.tmpl.content.firstElementChild.cloneNode(true);
-        li.dataset.id = task.id;
-        if(task.done) li.classList.add('done');
-        li.querySelector('.chk').checked = task.done;
-        li.querySelector('.title-text').textContent = task.text;
-        const meta = [];
-        if(task.time) meta.push(`⏰ ${task.time}`);
-        meta.push(task.prio==='alta' ? '🔥 Alta' : task.prio==='baixa' ? 'Baixa' : 'Normal');
-        li.querySelector('.meta').textContent = meta.join(' • ');
-
-        // Drag & drop
-        li.addEventListener('dragstart', dragStart);
-        li.addEventListener('dragover', dragOver);
-        li.addEventListener('drop', drop);
-
-        // Ações
-        li.querySelector('.chk').addEventListener('change', (e)=>{
-          task.done = e.target.checked; save(); render();
+    function atualizarTabela() {
+      bancoTableBody.innerHTML = '';
+      if (bancos.length === 0) {
+        emptyMsg.style.display = 'block';
+      } else {
+        emptyMsg.style.display = 'none';
+        bancos.forEach(banco => {
+          const tr = document.createElement('tr');
+          let lucro = banco.valorAtual - banco.totalInvestido;
+          let perc = banco.totalInvestido ? (lucro / banco.totalInvestido) * 100 : 0;
+          tr.innerHTML = `
+            <td>${banco.nome}</td>
+            <td>${formatarMoeda(banco.totalInvestido)}</td>
+            <td>${formatarMoeda(banco.valorAtual)}</td>
+            <td style="color:${lucro>=0?'#22c55e':'#ef4444'}">${formatarMoeda(lucro)}</td>
+            <td>${perc.toFixed(2)}%</td>
+          `;
+          bancoTableBody.appendChild(tr);
         });
-        li.querySelector('.delBtn').addEventListener('click', ()=>{
-          state.tasks = state.tasks.filter(t=>t.id!==task.id); save(); render();
-        });
-        li.querySelector('.editBtn').addEventListener('click', ()=> editTask(task.id));
-
-        el.list.appendChild(li);
-      });
-
-      // Atualiza botões ativos
-      el.chips.forEach(c=> c.classList.toggle('active', c.dataset.filter===state.filter));
+      }
     }
 
-    // ===== Drag and drop reordenação =====
-    let draggedId = null;
-    function dragStart(e){ draggedId = e.currentTarget.dataset.id; e.dataTransfer.effectAllowed='move'; }
-    function dragOver(e){ e.preventDefault(); e.dataTransfer.dropEffect='move'; }
-    function drop(e){
+    adicionarBancoBtn.addEventListener('click', () => {
+      formBanco.reset();
+      modalBanco.classList.add('active');
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      modalBanco.classList.remove('active');
+    });
+
+    modalBanco.addEventListener('click', (e) => {
+      if (e.target === modalBanco) {
+        modalBanco.classList.remove('active');
+      }
+    });
+
+    formBanco.addEventListener('submit', (e) => {
       e.preventDefault();
-      const targetId = e.currentTarget.dataset.id;
-      if(!draggedId || draggedId===targetId) return;
-      const from = state.tasks.findIndex(t=>String(t.id)===String(draggedId));
-      const to = state.tasks.findIndex(t=>String(t.id)===String(targetId));
-      const [moved] = state.tasks.splice(from,1);
-      state.tasks.splice(to,0,moved);
-      save(); render();
-    }
+      const nome = formBanco.nomeBanco.value.trim();
+      const totalInvestido = parseFloat(formBanco.totalInvestido.value);
+      const valorAtual = parseFloat(formBanco.valorAtual.value);
+      if (!nome || isNaN(totalInvestido) || isNaN(valorAtual)) return;
 
-    // ===== Edição inline =====
-    function editTask(id){
-      const task = state.tasks.find(t=>t.id===id);
-      if(!task) return;
-      const newText = prompt('Editar tarefa:', task.text);
-      if(newText!==null){ task.text = newText.trim() || task.text; }
-      const newTime = prompt('Horário (HH:MM) ou vazio:', task.time||'');
-      if(newTime!==null){ task.time = (newTime||'').trim(); }
-      const newPrio = prompt('Prioridade (alta, normal, baixa):', task.prio);
-      if(newPrio!==null && ['alta','normal','baixa'].includes(newPrio)) task.prio=newPrio;
-      save(); render();
-    }
-
-    // ===== Handlers =====
-    el.addBtn.addEventListener('click', add);
-    el.taskInput.addEventListener('keydown', e=>{ if(e.key==='Enter') add(); });
-    function add(){
-      const text = el.taskInput.value.trim();
-      if(!text) return el.taskInput.focus();
-      const t = {
-        id: Date.now(),
-        text,
-        time: el.timeInput.value.trim(),
-        prio: el.prio.value,
-        done: false,
-        createdAt: new Date().toISOString()
-      };
-      state.tasks.push(t); save(); render();
-      el.taskInput.value=''; el.timeInput.value=''; el.taskInput.focus();
-    }
-
-    el.clearDone.addEventListener('click', ()=>{
-      state.tasks = state.tasks.filter(t=>!t.done); save(); render();
+      bancos.push({ nome, totalInvestido, valorAtual });
+      atualizarResumo();
+      atualizarTabela();
+      modalBanco.classList.remove('active');
     });
-
-    el.clearDay.addEventListener('click', ()=>{
-      if(confirm('Apagar todas as tarefas deste dia?')){
-        state.tasks = []; save(); render();
-      }
-    });
-
-    el.btnHoje.addEventListener('click', ()=>{ state.date = new Date(); load(state.date); });
-    el.datePicker.addEventListener('change', (e)=>{ state.date = new Date(e.target.value + 'T00:00'); load(state.date); });
-
-    el.chips.forEach(c=> c.addEventListener('click', ()=>{ state.filter = c.dataset.filter; render(); }));
-
-    el.printBtn.addEventListener('click', ()=> window.print());
-
-    // Exportar / Importar JSON
-    el.exportBtn.addEventListener('click', ()=>{
-      const data = {};
-      for(let i=0;i<localStorage.length;i++){
-        const k = localStorage.key(i);
-        if(k && k.startsWith('tasks:')) data[k] = localStorage.getItem(k);
-      }
-      const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'tarefas_diarias.json'; a.click();
-      URL.revokeObjectURL(url);
-    });
-    el.importBtn.addEventListener('click', ()=> el.importFile.click());
-    el.importFile.addEventListener('change', async (e)=>{
-      const file = e.target.files?.[0]; if(!file) return;
-      const text = await file.text();
-      try{
-        const data = JSON.parse(text);
-        Object.entries(data).forEach(([k,v])=>{
-          if(k.startsWith('tasks:')) localStorage.setItem(k, v);
-        });
-        load(state.date);
-        alert('Importado com sucesso.');
-      }catch(err){
-        alert('Arquivo inválido.');
-      } finally { e.target.value=''; }
-    });
-
-    // ===== Tema =====
-    function applyTheme(t){
-      document.documentElement.setAttribute('data-theme', t);
-      localStorage.setItem('ui:theme', t);
-    }
-    const savedTheme = localStorage.getItem('ui:theme') || 'dark';
-    applyTheme(savedTheme);
-    el.themeBtn?.addEventListener('click', ()=>{
-      const cur = localStorage.getItem('ui:theme') || 'dark';
-      applyTheme(cur === 'dark' ? 'light' : 'dark');
-    });
-    el.topPrintBtn?.addEventListener('click', ()=> el.printBtn.click());
-
-    // ===== Inicialização =====
-    (function init(){
-      // Preenche data com hoje e carrega
-      const now = new Date();
-      state.date = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      load(state.date);
-    })();
   </script>
 </body>
 </html>
+
