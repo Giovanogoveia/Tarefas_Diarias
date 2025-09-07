@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Gerenciador de Investimentos</title>
-  <!-- FontAwesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     body {
@@ -128,7 +127,7 @@
     .verde { color: #22c55e; }
     .aprovado { color: #22c55e; font-weight: bold; }
 
-    /* Lista Bancos */
+    /* Lista Investimentos */
     .banco-list {
       margin-top: 1.5rem;
       background: white;
@@ -231,53 +230,52 @@
     <header class="header">
       <div class="user-info">
         <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" class="avatar">
-        <span>Olá, Gustavo</span>
+        <span>Olá, Investidor</span>
       </div>
       <div class="menu"><i class="fas fa-bars"></i></div>
     </header>
 
     <!-- Saldo -->
     <section class="saldo">
-      <p>Saldo atual</p>
+      <p>Patrimônio Total</p>
       <h1 id="totalInvestido">R$ 0,00</h1>
     </section>
 
     <!-- Atalhos -->
     <section class="atalhos">
-      <div class="atalho"><div class="icon"><i class="fas fa-search"></i></div><span>Lente Neon</span></div>
-      <div class="atalho"><div class="icon"><i class="fas fa-paper-plane"></i></div><span>Enviar Pix</span></div>
-      <div class="atalho"><div class="icon"><i class="fas fa-credit-card"></i></div><span>Pagar</span></div>
-      <div class="atalho"><div class="icon"><i class="fas fa-bolt"></i></div><span>Pix</span></div>
+      <div class="atalho"><div class="icon"><i class="fas fa-coins"></i></div><span>Renda Fixa</span></div>
+      <div class="atalho"><div class="icon"><i class="fas fa-chart-line"></i></div><span>Ações</span></div>
+      <div class="atalho"><div class="icon"><i class="fas fa-bitcoin"></i></div><span>Cripto</span></div>
+      <div class="atalho"><div class="icon"><i class="fas fa-piggy-bank"></i></div><span>Poupança</span></div>
     </section>
 
     <!-- Cards -->
     <div class="card">
-      <p><b>Cartão de Crédito</b></p>
-      <p>Fatura fechada <b id="valorAtual">R$ 0,00</b></p>
-      <button class="btn">Adiantar</button>
-      <p>Limite disponível: <span class="verde" id="lucroPrejuizo">R$ 0,00</span></p>
+      <p><b>Carteira de Ações</b></p>
+      <p>Valor atual <b id="valorAtual">R$ 0,00</b></p>
+      <p>Lucro acumulado: <span class="verde" id="lucroPrejuizo">R$ 0,00</span></p>
     </div>
 
     <div class="card">
-      <p><b>Investimentos</b></p>
+      <p><b>Renda Fixa</b></p>
       <p>Guardado <b id="investimentos">R$ 0,00</b></p>
-      <button class="btn" id="adicionarBancoBtn">Guardar</button>
+      <button class="btn" id="adicionarBancoBtn">Adicionar Ativo</button>
     </div>
 
     <div class="card">
-      <p><b>Empréstimo</b></p>
-      <p class="aprovado">Aprovado</p>
-      <p>Pedido aprovado <b>R$ 24.500,00</b></p>
+      <p><b>Oportunidades de Investimento</b></p>
+      <p class="aprovado">Disponível</p>
+      <p>Nova emissão disponível em <b>Tesouro Direto</b></p>
       <a href="#" style="color:#007bff;font-weight:bold;text-decoration:none;">Ver mais</a>
     </div>
 
-    <!-- Lista Bancos -->
+    <!-- Lista Investimentos -->
     <div class="banco-list" id="bancoListContainer">
-      <h3>Lista de Bancos</h3>
+      <h3>Lista de Ativos</h3>
       <table id="bancoTable">
         <thead>
           <tr>
-            <th>Banco</th>
+            <th>Ativo</th>
             <th>Total Investido</th>
             <th>Valor Atual</th>
             <th>Lucro</th>
@@ -286,17 +284,17 @@
         </thead>
         <tbody></tbody>
       </table>
-      <p class="empty-msg" id="emptyMsg">Nenhum banco cadastrado ainda.</p>
+      <p class="empty-msg" id="emptyMsg">Nenhum ativo cadastrado ainda.</p>
     </div>
   </div>
 
   <!-- Modal -->
   <div class="modal" id="modalBanco">
     <div class="modal-content">
-      <h3>Adicionar Banco</h3>
+      <h3>Adicionar Ativo</h3>
       <form id="formBanco">
-        <label for="nomeBanco">Nome do Banco</label>
-        <input type="text" id="nomeBanco" name="nomeBanco" required minlength="2" />
+        <label for="nomeBanco">Nome do Ativo</label>
+        <input type="text" id="nomeBanco" name="nomeBanco" required minlength="2" placeholder="Ex: PETR4, Tesouro Selic, Bitcoin" />
 
         <label for="totalInvestidoInput">Total Investido (R$)</label>
         <input type="number" id="totalInvestidoInput" name="totalInvestido" required min="0" step="0.01" />
@@ -313,7 +311,7 @@
   </div>
 
   <script>
-    let bancos = [];
+    let ativos = [];
 
     const totalInvestidoEl = document.getElementById('totalInvestido');
     const valorAtualEl = document.getElementById('valorAtual');
@@ -331,8 +329,8 @@
     }
 
     function atualizarResumo() {
-      let totalInvestido = bancos.reduce((acc, b) => acc + b.totalInvestido, 0);
-      let valorAtual = bancos.reduce((acc, b) => acc + b.valorAtual, 0);
+      let totalInvestido = ativos.reduce((acc, b) => acc + b.totalInvestido, 0);
+      let valorAtual = ativos.reduce((acc, b) => acc + b.valorAtual, 0);
       let lucro = valorAtual - totalInvestido;
 
       totalInvestidoEl.textContent = formatarMoeda(totalInvestido);
@@ -343,18 +341,18 @@
 
     function atualizarTabela() {
       bancoTableBody.innerHTML = '';
-      if (bancos.length === 0) {
+      if (ativos.length === 0) {
         emptyMsg.style.display = 'block';
       } else {
         emptyMsg.style.display = 'none';
-        bancos.forEach(banco => {
+        ativos.forEach(ativo => {
           const tr = document.createElement('tr');
-          let lucro = banco.valorAtual - banco.totalInvestido;
-          let perc = banco.totalInvestido ? (lucro / banco.totalInvestido) * 100 : 0;
+          let lucro = ativo.valorAtual - ativo.totalInvestido;
+          let perc = ativo.totalInvestido ? (lucro / ativo.totalInvestido) * 100 : 0;
           tr.innerHTML = `
-            <td>${banco.nome}</td>
-            <td>${formatarMoeda(banco.totalInvestido)}</td>
-            <td>${formatarMoeda(banco.valorAtual)}</td>
+            <td>${ativo.nome}</td>
+            <td>${formatarMoeda(ativo.totalInvestido)}</td>
+            <td>${formatarMoeda(ativo.valorAtual)}</td>
             <td style="color:${lucro>=0?'#22c55e':'#ef4444'}">${formatarMoeda(lucro)}</td>
             <td>${perc.toFixed(2)}%</td>
           `;
@@ -385,7 +383,7 @@
       const valorAtual = parseFloat(formBanco.valorAtual.value);
       if (!nome || isNaN(totalInvestido) || isNaN(valorAtual)) return;
 
-      bancos.push({ nome, totalInvestido, valorAtual });
+      ativos.push({ nome, totalInvestido, valorAtual });
       atualizarResumo();
       atualizarTabela();
       modalBanco.classList.remove('active');
