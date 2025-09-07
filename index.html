@@ -2,8 +2,9 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Gerenciador de Investimentos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- FontAwesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     body {
@@ -13,7 +14,7 @@
     }
 
     .app-container {
-      max-width: 400px;
+      max-width: 800px;
       margin: auto;
       padding: 1rem;
     }
@@ -23,6 +24,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 1rem;
     }
 
     .user-info {
@@ -44,7 +46,8 @@
 
     /* Saldo */
     .saldo {
-      margin: 1rem 0;
+      text-align: center;
+      margin-bottom: 1rem;
     }
 
     .saldo p {
@@ -59,10 +62,11 @@
       margin: 0.2rem 0;
     }
 
-    /* Atalhos */
+    /* Atalhos Nav */
     .atalhos {
       display: flex;
-      justify-content: space-around;
+      justify-content: center;
+      gap: 2rem;
       margin: 1.5rem 0;
     }
 
@@ -71,95 +75,123 @@
     }
 
     .atalho .icon {
-      width: 55px;
-      height: 55px;
+      width: 65px;
+      height: 65px;
       border-radius: 50%;
       background: #f1f5f9;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 1.3rem;
+      font-size: 1.5rem;
       margin: auto;
       color: #007bff;
     }
 
     .atalho span {
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       color: #333;
       margin-top: 0.4rem;
       display: block;
     }
 
-    /* Cards */
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 1.2rem;
+    /* Summary cards */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
       margin-bottom: 1rem;
+    }
+
+    .summary-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    .card p {
-      margin: 0.3rem 0;
-      color: #444;
+    .summary-card .icon {
+      font-size: 1.4rem;
+      margin-bottom: 0.3rem;
     }
 
-    .card p:first-child {
+    .summary-card .label {
+      font-size: 0.9rem;
       color: #666;
-      font-size: 0.95rem;
     }
 
-    .card b {
-      color: #111;
+    .summary-card .value {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-top: 0.3rem;
     }
 
-    .btn {
+    /* Botão principal */
+    #add-button {
+      display: block;
+      margin: 20px auto;
+      padding: 12px 20px;
       background: #007bff;
-      color: white;
+      color: #fff;
       border: none;
-      border-radius: 20px;
-      padding: 0.4rem 1.2rem;
-      margin-top: 0.5rem;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: bold;
       cursor: pointer;
-      font-weight: 600;
+      transition: background 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
 
-    .verde { color: #22c55e; }
-    .aprovado { color: #22c55e; font-weight: bold; }
+    #add-button:hover {
+      background: #0056b3;
+    }
 
-    /* Lista Investimentos */
-    .banco-list {
-      margin-top: 1.5rem;
-      background: white;
+    /* Cards de ativos */
+    #card-container {
+      margin-top: 1rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .card {
+      background: #fff;
       border-radius: 12px;
       padding: 1rem;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      position: relative;
     }
 
-    .banco-list table {
-      width: 100%;
-      border-collapse: collapse;
+    .delete-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      color: #444;
+      cursor: pointer;
     }
 
-    .banco-list th, .banco-list td {
-      padding: 0.5rem;
-      text-align: center;
-      border-bottom: 1px solid #eee;
-      font-size: 0.9rem;
+    .kvs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      margin-top: 0.5rem;
+      gap: 0.3rem;
     }
 
-    .banco-list th {
-      color: #007bff;
-      text-transform: uppercase;
-      font-size: 0.75rem;
+    .kvs .label {
+      color: #666;
+      font-size: 0.85rem;
     }
 
-    .empty-msg {
-      text-align: center;
-      font-style: italic;
-      margin-top: 1rem;
-      color: #555;
+    .pill {
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-weight: bold;
     }
+
+    .pill.pos { color: #22c55e; }
+    .pill.neg { color: #ef4444; }
 
     /* Modal */
     .modal {
@@ -172,7 +204,7 @@
       z-index: 100;
     }
 
-    .modal.active {
+    .modal.open {
       display: flex;
     }
 
@@ -185,41 +217,23 @@
       text-align: left;
     }
 
-    .modal-content h3 {
-      margin-top: 0;
-      margin-bottom: 1rem;
-      color: #007bff;
-      font-weight: 900;
-    }
-
-    .modal-content label {
-      font-weight: 600;
-      display: block;
-      margin-bottom: 0.3rem;
-      margin-top: 1rem;
-    }
-
     .modal-content input {
       width: 100%;
-      padding: 0.5rem 0.7rem;
-      font-size: 1rem;
+      padding: 0.5rem;
+      margin: 0.4rem 0;
       border-radius: 8px;
-      border: 1.5px solid #ccc;
+      border: 1px solid #ccc;
     }
 
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      margin-top: 1.8rem;
-    }
-
-    .btn-secondary {
-      background-color: #ddd;
-      color: #444;
+    .modal-content button {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 0.6rem;
       border: none;
-      border-radius: 12px;
-      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      background: #007bff;
+      color: #fff;
+      font-weight: bold;
       cursor: pointer;
     }
   </style>
@@ -238,157 +252,192 @@
     <!-- Saldo -->
     <section class="saldo">
       <p>Patrimônio Total</p>
-      <h1 id="totalInvestido">R$ 0,00</h1>
+      <h1 id="patrimonioTotal">R$ 0,00</h1>
     </section>
 
-    <!-- Atalhos -->
+    <!-- Nav Atalhos -->
     <section class="atalhos">
       <div class="atalho"><div class="icon"><i class="fas fa-coins"></i></div><span>Renda Fixa</span></div>
       <div class="atalho"><div class="icon"><i class="fas fa-chart-line"></i></div><span>Ações</span></div>
-      <div class="atalho"><div class="icon"><i class="fas fa-bitcoin"></i></div><span>Cripto</span></div>
+      <div class="atalho"><div class="icon"><i class="fab fa-bitcoin"></i></div><span>Cripto</span></div>
       <div class="atalho"><div class="icon"><i class="fas fa-piggy-bank"></i></div><span>Poupança</span></div>
     </section>
 
-    <!-- Cards -->
-    <div class="card">
-      <p><b>Carteira de Ações</b></p>
-      <p>Valor atual <b id="valorAtual">R$ 0,00</b></p>
-      <p>Lucro acumulado: <span class="verde" id="lucroPrejuizo">R$ 0,00</span></p>
+    <!-- Resumo -->
+    <div class="summary-grid">
+      <div class="summary-card card-investido">
+        <div class="icon">💰</div>
+        <div class="label">Total Investido</div>
+        <div id="total-aplicado" class="value">R$ 0,00</div>
+      </div>
+
+      <div class="summary-card card-atual">
+        <div class="icon">💼</div>
+        <div class="label">Valor Atual</div>
+        <div id="total-atual" class="value">R$ 0,00</div>
+      </div>
+
+      <div class="summary-card card-lucro">
+        <div class="icon">📈</div>
+        <div class="label">Lucro / Prejuízo</div>
+        <div id="lucro" class="value">R$ 0,00</div>
+      </div>
+
+      <div class="summary-card card-rendimento">
+        <div class="icon">📊</div>
+        <div class="label">% Rendimento</div>
+        <div id="rendimento" class="value">0%</div>
+      </div>
     </div>
 
-    <div class="card">
-      <p><b>Renda Fixa</b></p>
-      <p>Guardado <b id="investimentos">R$ 0,00</b></p>
-      <button class="btn" id="adicionarBancoBtn">Adicionar Ativo</button>
-    </div>
+    <!-- Botão centralizado -->
+    <button id="add-button" onclick="abrirModal()">+ Adicionar Ativo</button>
 
-    <div class="card">
-      <p><b>Oportunidades de Investimento</b></p>
-      <p class="aprovado">Disponível</p>
-      <p>Nova emissão disponível em <b>Tesouro Direto</b></p>
-      <a href="#" style="color:#007bff;font-weight:bold;text-decoration:none;">Ver mais</a>
-    </div>
-
-    <!-- Lista Investimentos -->
-    <div class="banco-list" id="bancoListContainer">
-      <h3>Lista de Ativos</h3>
-      <table id="bancoTable">
-        <thead>
-          <tr>
-            <th>Ativo</th>
-            <th>Total Investido</th>
-            <th>Valor Atual</th>
-            <th>Lucro</th>
-            <th>%</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <p class="empty-msg" id="emptyMsg">Nenhum ativo cadastrado ainda.</p>
-    </div>
+    <!-- Lista de Cards -->
+    <div id="card-container" class="grid">Carregando...</div>
   </div>
 
   <!-- Modal -->
-  <div class="modal" id="modalBanco">
+  <div class="modal" id="modal">
     <div class="modal-content">
-      <h3>Adicionar Ativo</h3>
-      <form id="formBanco">
-        <label for="nomeBanco">Nome do Ativo</label>
-        <input type="text" id="nomeBanco" name="nomeBanco" required minlength="2" placeholder="Ex: PETR4, Tesouro Selic, Bitcoin" />
-
-        <label for="totalInvestidoInput">Total Investido (R$)</label>
-        <input type="number" id="totalInvestidoInput" name="totalInvestido" required min="0" step="0.01" />
-
-        <label for="valorAtualInput">Valor Atual (R$)</label>
-        <input type="number" id="valorAtualInput" name="valorAtual" required min="0" step="0.01" />
-
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary" id="cancelBtn">Cancelar</button>
-          <button type="submit" class="btn">Salvar</button>
-        </div>
-      </form>
+      <h2 id="modal-title">Novo Ativo</h2>
+      <input type="text" id="input-nome" placeholder="Nome do ativo" />
+      <input type="number" id="input-aplicado" placeholder="Valor aplicado" />
+      <input type="number" id="input-atual" placeholder="Valor atual" />
+      <input type="text" id="input-icon" placeholder="URL do ícone (opcional)" />
+      <button onclick="salvarAlteracoes()">Salvar</button>
     </div>
   </div>
 
   <script>
-    let ativos = [];
+    const supabaseUrl = 'https://dylziaqkyavkfwjepqkp.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5bHppYXFreWF2a2Z3amVwcWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0NTc1OTgsImV4cCI6MjA2ODAzMzU5OH0.gy5jXxKOTgeCf0Rwq7ktLTz1pyoZ8dJjZOK9UB9rHCM';
+    const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+    const PCT = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 });
 
-    const totalInvestidoEl = document.getElementById('totalInvestido');
-    const valorAtualEl = document.getElementById('valorAtual');
-    const lucroPrejuizoEl = document.getElementById('lucroPrejuizo');
-    const investimentosEl = document.getElementById('investimentos');
-    const bancoTableBody = document.querySelector('#bancoTable tbody');
-    const modalBanco = document.getElementById('modalBanco');
-    const adicionarBancoBtn = document.getElementById('adicionarBancoBtn');
-    const cancelBtn = document.getElementById('cancelBtn');
-    const formBanco = document.getElementById('formBanco');
-    const emptyMsg = document.getElementById('emptyMsg');
+    let bancoEditando = null;
 
-    function formatarMoeda(valor) {
-      return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    function renderCard({ id, nome, valor_aplicado, valor_atual, icone_url }) {
+      const dif = valor_atual - valor_aplicado;
+      const rend = valor_aplicado > 0 ? (dif / valor_aplicado) * 100 : 0;
+      const pos = dif >= 0;
+
+      return `
+        <div class="card">
+          <button class="delete-btn" onclick="excluirBanco(${id})">×</button>
+          <div onclick="abrirModal(${id}, '${nome}', ${valor_aplicado}, ${valor_atual}, '${icone_url || ''}')">
+            <h3>${nome}</h3>
+            <p>Aplicado: ${BRL.format(valor_aplicado)}</p>
+            <p>Atual: ${BRL.format(valor_atual)}</p>
+            <p>Diferença: <span class="pill ${pos ? 'pos' : 'neg'}">${BRL.format(dif)}</span></p>
+            <p>Rendimento: <strong>${PCT.format(rend)}%</strong></p>
+          </div>
+        </div>
+      `;
     }
 
-    function atualizarResumo() {
-      let totalInvestido = ativos.reduce((acc, b) => acc + b.totalInvestido, 0);
-      let valorAtual = ativos.reduce((acc, b) => acc + b.valorAtual, 0);
-      let lucro = valorAtual - totalInvestido;
+    async function carregarTodosOsCards() {
+      const res = await fetch(`${supabaseUrl}/rest/v1/bancos?select=*`, {
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+          Accept: "application/json"
+        }
+      });
 
-      totalInvestidoEl.textContent = formatarMoeda(totalInvestido);
-      valorAtualEl.textContent = formatarMoeda(valorAtual);
-      lucroPrejuizoEl.textContent = formatarMoeda(lucro);
-      investimentosEl.textContent = formatarMoeda(valorAtual);
+      const data = await res.json();
+      const container = document.getElementById('card-container');
+
+      if (!data || !data.length) {
+        container.innerHTML = '<div class="card">Nenhum ativo encontrado.</div>';
+        return;
+      }
+
+      container.innerHTML = data.map(renderCard).join('');
+
+      let totalAplicado = 0;
+      let totalAtual = 0;
+
+      data.forEach(b => {
+        totalAplicado += b.valor_aplicado;
+        totalAtual += b.valor_atual;
+      });
+
+      const lucro = totalAtual - totalAplicado;
+      const rendimento = totalAplicado > 0 ? (lucro / totalAplicado) * 100 : 0;
+
+      document.getElementById('total-aplicado').innerText = BRL.format(totalAplicado);
+      document.getElementById('total-atual').innerText = BRL.format(totalAtual);
+      document.getElementById('lucro').innerText = BRL.format(lucro);
+      document.getElementById('rendimento').innerText = PCT.format(rendimento) + '%';
+      document.getElementById('patrimonioTotal').innerText = BRL.format(totalAtual);
     }
 
-    function atualizarTabela() {
-      bancoTableBody.innerHTML = '';
-      if (ativos.length === 0) {
-        emptyMsg.style.display = 'block';
+    function abrirModal(id = null, nome = '', aplicado = '', atual = '', icon = '') {
+      bancoEditando = id;
+      document.getElementById('modal-title').innerText = id ? 'Editar Ativo' : 'Novo Ativo';
+      document.getElementById('input-nome').value = nome;
+      document.getElementById('input-nome').disabled = !!id;
+      document.getElementById('input-aplicado').value = aplicado;
+      document.getElementById('input-atual').value = atual;
+      document.getElementById('input-icon').value = icon;
+      document.getElementById('modal').classList.add('open');
+    }
+
+    async function salvarAlteracoes() {
+      const nome = document.getElementById('input-nome').value.trim();
+      const aplicado = parseFloat(document.getElementById('input-aplicado').value);
+      const atual = parseFloat(document.getElementById('input-atual').value);
+      const icone = document.getElementById('input-icon').value.trim();
+
+      const body = { nome, valor_aplicado: aplicado, valor_atual: atual, icone_url: icone };
+
+      const url = bancoEditando
+        ? `${supabaseUrl}/rest/v1/bancos?id=eq.${bancoEditando}`
+        : `${supabaseUrl}/rest/v1/bancos`;
+
+      const method = bancoEditando ? 'PATCH' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (response.ok) {
+        document.getElementById('modal').classList.remove('open');
+        carregarTodosOsCards();
       } else {
-        emptyMsg.style.display = 'none';
-        ativos.forEach(ativo => {
-          const tr = document.createElement('tr');
-          let lucro = ativo.valorAtual - ativo.totalInvestido;
-          let perc = ativo.totalInvestido ? (lucro / ativo.totalInvestido) * 100 : 0;
-          tr.innerHTML = `
-            <td>${ativo.nome}</td>
-            <td>${formatarMoeda(ativo.totalInvestido)}</td>
-            <td>${formatarMoeda(ativo.valorAtual)}</td>
-            <td style="color:${lucro>=0?'#22c55e':'#ef4444'}">${formatarMoeda(lucro)}</td>
-            <td>${perc.toFixed(2)}%</td>
-          `;
-          bancoTableBody.appendChild(tr);
-        });
+        alert('Erro ao salvar');
       }
     }
 
-    adicionarBancoBtn.addEventListener('click', () => {
-      formBanco.reset();
-      modalBanco.classList.add('active');
-    });
+    async function excluirBanco(id) {
+      if (!confirm('Tem certeza que deseja excluir este ativo?')) return;
 
-    cancelBtn.addEventListener('click', () => {
-      modalBanco.classList.remove('active');
-    });
+      const response = await fetch(`${supabaseUrl}/rest/v1/bancos?id=eq.${id}`, {
+        method: 'DELETE',
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`
+        }
+      });
 
-    modalBanco.addEventListener('click', (e) => {
-      if (e.target === modalBanco) {
-        modalBanco.classList.remove('active');
+      if (response.ok) {
+        carregarTodosOsCards();
+      } else {
+        alert('Erro ao excluir');
       }
-    });
+    }
 
-    formBanco.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const nome = formBanco.nomeBanco.value.trim();
-      const totalInvestido = parseFloat(formBanco.totalInvestido.value);
-      const valorAtual = parseFloat(formBanco.valorAtual.value);
-      if (!nome || isNaN(totalInvestido) || isNaN(valorAtual)) return;
-
-      ativos.push({ nome, totalInvestido, valorAtual });
-      atualizarResumo();
-      atualizarTabela();
-      modalBanco.classList.remove('active');
-    });
+    carregarTodosOsCards();
   </script>
 </body>
 </html>
+
 
