@@ -33,7 +33,7 @@
       gap: 0.5rem;
     }
 
-    .avatar {
+    .avatar-top {
       width: 40px;
       height: 40px;
       border-radius: 50%;
@@ -141,10 +141,7 @@
       transition: background 0.3s ease;
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
-
-    #add-button:hover {
-      background: #0056b3;
-    }
+    #add-button:hover { background: #0056b3; }
 
     /* Cards de ativos */
     #card-container {
@@ -155,7 +152,7 @@
 
     .card {
       background: #fff;
-      border-radius: 12px;
+      border-radius: 16px;
       padding: 1rem;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       position: relative;
@@ -172,26 +169,33 @@
       cursor: pointer;
     }
 
-    .kvs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      margin-top: 0.5rem;
-      gap: 0.3rem;
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: .6rem;
     }
 
-    .kvs .label {
-      color: #666;
-      font-size: 0.85rem;
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      display:flex;align-items:center;justify-content:center;
+      font-weight:700;color:#007bff;
+      overflow:hidden;
+      border:2px solid #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      font-size: 1.1rem;
     }
+    .avatar img { width:100%; height:100%; object-fit:cover; }
 
-    .pill {
-      padding: 2px 6px;
-      border-radius: 6px;
-      font-weight: bold;
-    }
+    .name { font-weight: 700; font-size: 1.05rem; }
 
-    .pill.pos { color: #22c55e; }
-    .pill.neg { color: #ef4444; }
+    .kvs { margin-top: .4rem; }
+    .pill { font-weight: 700; }
+    .pos { color: #22c55e; }
+    .neg { color: #ef4444; }
 
     /* Modal */
     .modal {
@@ -203,10 +207,7 @@
       align-items: center;
       z-index: 100;
     }
-
-    .modal.open {
-      display: flex;
-    }
+    .modal.open { display: flex; }
 
     .modal-content {
       background: white;
@@ -216,7 +217,7 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.25);
       text-align: left;
     }
-
+    .modal-content h2 { margin: 0 0 .8rem; color:#007bff; }
     .modal-content input {
       width: 100%;
       padding: 0.5rem;
@@ -224,7 +225,6 @@
       border-radius: 8px;
       border: 1px solid #ccc;
     }
-
     .modal-content button {
       margin-top: 1rem;
       width: 100%;
@@ -243,7 +243,7 @@
     <!-- Header -->
     <header class="header">
       <div class="user-info">
-        <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" class="avatar">
+        <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" class="avatar-top" alt="user">
         <span>Olá, Investidor</span>
       </div>
       <div class="menu"><i class="fas fa-bars"></i></div>
@@ -301,7 +301,7 @@
   <div class="modal" id="modal">
     <div class="modal-content">
       <h2 id="modal-title">Novo Ativo</h2>
-      <input type="text" id="input-nome" placeholder="Nome do ativo" />
+      <input type="text" id="input-nome" placeholder="Nome do ativo (ex: Neon, PagSeguro)" />
       <input type="number" id="input-aplicado" placeholder="Valor aplicado" />
       <input type="number" id="input-atual" placeholder="Valor atual" />
       <input type="text" id="input-icon" placeholder="URL do ícone (opcional)" />
@@ -310,13 +310,57 @@
   </div>
 
   <script>
+    // ======== CONFIG ========
     const supabaseUrl = 'https://dylziaqkyavkfwjepqkp.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5bHppYXFreWF2a2Z3amVwcWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0NTc1OTgsImV4cCI6MjA2ODAzMzU5OH0.gy5jXxKOTgeCf0Rwq7ktLTz1pyoZ8dJjZOK9UB9rHCM';
     const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
     const PCT = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 });
 
-    let bancoEditando = null;
+    // Mapeia nomes → domínios para tentar logo automático (Clearbit)
+    const domainByName = {
+      'neon': 'neon.com.br',
+      'nubank': 'nubank.com.br',
+      'pagseguro': 'pagseguro.com.br',
+      'pagbank': 'pagbank.com.br',
+      'mercado pago': 'mercadopago.com',
+      'mercadopago': 'mercadopago.com',
+      'itau': 'itau.com.br',
+      'bradesco': 'bradesco.com.br',
+      'santander': 'santander.com.br',
+      'banco do brasil': 'bb.com.br',
+      'bb': 'bb.com.br',
+      'caixa': 'caixa.gov.br',
+      'inter': 'inter.co',
+      'pagseguro uol': 'pagseguro.uol.com.br'
+    };
 
+    // ======== ESTADO ========
+    let bancoEditando = null;
+    let todos = [];
+
+    // ======== HELPERS ========
+    function getLogo(nome, icone_url) {
+      if (icone_url && icone_url.trim()) return icone_url.trim();
+      if (!nome) return null;
+      const key = nome.toLowerCase().trim();
+      // procura por match direto ou parcial
+      let domain = domainByName[key];
+      if (!domain) {
+        for (const k in domainByName) {
+          if (key.includes(k)) { domain = domainByName[k]; break; }
+        }
+      }
+      return domain ? `https://logo.clearbit.com/${domain}` : null;
+    }
+
+    function avatarHTML(nome, icone_url) {
+      const logo = getLogo(nome, icone_url);
+      return logo
+        ? `<img src="${logo}" alt="${nome}" onerror="this.closest('.avatar').textContent='${(nome||'?').charAt(0).toUpperCase()}'; this.remove();">`
+        : (nome ? nome.charAt(0).toUpperCase() : '?');
+    }
+
+    // ======== RENDER ========
     function renderCard({ id, nome, valor_aplicado, valor_atual, icone_url }) {
       const dif = valor_atual - valor_aplicado;
       const rend = valor_aplicado > 0 ? (dif / valor_aplicado) * 100 : 0;
@@ -324,11 +368,16 @@
 
       return `
         <div class="card">
-          <button class="delete-btn" onclick="excluirBanco(${id})">×</button>
-          <div onclick="abrirModal(${id}, '${nome}', ${valor_aplicado}, ${valor_atual}, '${icone_url || ''}')">
-            <h3>${nome}</h3>
-            <p>Aplicado: ${BRL.format(valor_aplicado)}</p>
-            <p>Atual: ${BRL.format(valor_atual)}</p>
+          <button class="delete-btn" onclick="excluirBanco(${id})" title="Excluir">×</button>
+
+          <div class="card-header" onclick="abrirModal(${id}, '${nome?.replace(/'/g,"\\'")}', ${valor_aplicado}, ${valor_atual}, '${(icone_url||'').replace(/'/g,"\\'")}')">
+            <div class="avatar">${avatarHTML(nome, icone_url)}</div>
+            <div class="name">${nome || '-'}</div>
+          </div>
+
+          <div class="kvs">
+            <p>Aplicado: <strong>${BRL.format(valor_aplicado)}</strong></p>
+            <p>Atual: <strong>${BRL.format(valor_atual)}</strong></p>
             <p>Diferença: <span class="pill ${pos ? 'pos' : 'neg'}">${BRL.format(dif)}</span></p>
             <p>Rendimento: <strong>${PCT.format(rend)}%</strong></p>
           </div>
@@ -336,33 +385,9 @@
       `;
     }
 
-    async function carregarTodosOsCards() {
-      const res = await fetch(`${supabaseUrl}/rest/v1/bancos?select=*`, {
-        headers: {
-          apikey: supabaseKey,
-          Authorization: `Bearer ${supabaseKey}`,
-          Accept: "application/json"
-        }
-      });
-
-      const data = await res.json();
-      const container = document.getElementById('card-container');
-
-      if (!data || !data.length) {
-        container.innerHTML = '<div class="card">Nenhum ativo encontrado.</div>';
-        return;
-      }
-
-      container.innerHTML = data.map(renderCard).join('');
-
-      let totalAplicado = 0;
-      let totalAtual = 0;
-
-      data.forEach(b => {
-        totalAplicado += b.valor_aplicado;
-        totalAtual += b.valor_atual;
-      });
-
+    function atualizarResumo(lista) {
+      const totalAplicado = lista.reduce((s, x) => s + (x.valor_aplicado||0), 0);
+      const totalAtual = lista.reduce((s, x) => s + (x.valor_atual||0), 0);
       const lucro = totalAtual - totalAplicado;
       const rendimento = totalAplicado > 0 ? (lucro / totalAplicado) * 100 : 0;
 
@@ -373,15 +398,41 @@
       document.getElementById('patrimonioTotal').innerText = BRL.format(totalAtual);
     }
 
+    // ======== CRUD ========
+    async function carregarTodosOsCards() {
+      const res = await fetch(`${supabaseUrl}/rest/v1/bancos?select=*`, {
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+          Accept: "application/json"
+        }
+      });
+
+      todos = await res.json();
+      const container = document.getElementById('card-container');
+
+      if (!todos || !todos.length) {
+        container.innerHTML = '<div class="card">Nenhum ativo encontrado.</div>';
+        atualizarResumo([]);
+        return;
+      }
+
+      container.innerHTML = todos.map(renderCard).join('');
+      atualizarResumo(todos);
+    }
+
     function abrirModal(id = null, nome = '', aplicado = '', atual = '', icon = '') {
       bancoEditando = id;
       document.getElementById('modal-title').innerText = id ? 'Editar Ativo' : 'Novo Ativo';
-      document.getElementById('input-nome').value = nome;
-      document.getElementById('input-nome').disabled = !!id;
-      document.getElementById('input-aplicado').value = aplicado;
-      document.getElementById('input-atual').value = atual;
-      document.getElementById('input-icon').value = icon;
+      document.getElementById('input-nome').value = nome || '';
+      document.getElementById('input-aplicado').value = aplicado || '';
+      document.getElementById('input-atual').value = atual || '';
+      document.getElementById('input-icon').value = icon || '';
       document.getElementById('modal').classList.add('open');
+    }
+
+    function fecharModal() {
+      document.getElementById('modal').classList.remove('open');
     }
 
     async function salvarAlteracoes() {
@@ -390,7 +441,12 @@
       const atual = parseFloat(document.getElementById('input-atual').value);
       const icone = document.getElementById('input-icon').value.trim();
 
-      const body = { nome, valor_aplicado: aplicado, valor_atual: atual, icone_url: icone };
+      if (!nome || isNaN(aplicado) || isNaN(atual)) {
+        alert('Preencha nome, aplicado e atual corretamente.');
+        return;
+      }
+
+      const body = { nome, valor_aplicado: aplicado, valor_atual: atual, icone_url: icone || null };
 
       const url = bancoEditando
         ? `${supabaseUrl}/rest/v1/bancos?id=eq.${bancoEditando}`
@@ -410,7 +466,7 @@
       });
 
       if (response.ok) {
-        document.getElementById('modal').classList.remove('open');
+        fecharModal();
         carregarTodosOsCards();
       } else {
         alert('Erro ao salvar');
@@ -435,9 +491,11 @@
       }
     }
 
+    // init
     carregarTodosOsCards();
   </script>
 </body>
 </html>
+
 
 
