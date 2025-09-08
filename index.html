@@ -1,501 +1,318 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Gerenciador de Investimentos</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- FontAwesome para ícones -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tarefas Diárias</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
     body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f3f4f6, #e0f2fe);
+      color: #1e293b;
+      display: flex;
+      justify-content: center;
+      padding: 40px;
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to bottom, #e6f0ff 20%, #ffffff 100%);
     }
-
-    .app-container {
-      max-width: 800px;
-      margin: auto;
-      padding: 1rem;
+    .app { width: min(950px, 100%); }
+    .hero {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 24px; border-radius: 20px;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
     }
-
-    /* Header */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
+    .logo {
+      width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center;
+      background: linear-gradient(135deg,#2563eb,#10b981);
+      color:#fff; font-weight:700; font-size:22px;
+      box-shadow:0 4px 10px rgba(37,99,235,0.4);
     }
-
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 12px;
+      padding: 20px; border-radius: 20px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
     }
-
-    .avatar-top {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
+    input, select, button {
+      border: none; padding: 12px 18px;
+      border-radius: 12px; font-size: 14px;
     }
-
-    .menu {
-      font-size: 1.5rem;
+    button {
+      background:#2563eb; color:#fff; cursor:pointer;
+      font-weight:600; border-radius:9999px;
+      transition:0.3s;
+    }
+    button:hover { filter:brightness(1.1); transform:translateY(-1px); }
+    .filters { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+    .chip {
+      padding: 8px 18px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      color: #374151;
       cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: 0.3s;
+      border: 1px solid #d1d5db;
     }
-
-    /* Saldo */
-    .saldo {
-      text-align: center;
-      margin-bottom: 1rem;
+    .chip:hover {
+      background: #dbeafe;
+      color: #2563eb;
     }
-
-    .saldo p {
-      margin: 0;
-      color: #666;
-    }
-
-    .saldo h1 {
-      color: #0044cc;
-      font-size: 2.2rem;
-      font-weight: bold;
-      margin: 0.2rem 0;
-    }
-
-    /* Atalhos Nav */
-    .atalhos {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      margin: 1.5rem 0;
-    }
-
-    .atalho {
-      text-align: center;
-    }
-
-    .atalho .icon {
-      width: 65px;
-      height: 65px;
-      border-radius: 50%;
-      background: #f1f5f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 1.5rem;
-      margin: auto;
-      color: #007bff;
-    }
-
-    .atalho span {
-      font-size: 0.9rem;
-      color: #333;
-      margin-top: 0.4rem;
-      display: block;
-    }
-
-    /* Summary cards */
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .summary-card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 1rem;
-      text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    .summary-card .icon {
-      font-size: 1.4rem;
-      margin-bottom: 0.3rem;
-    }
-
-    .summary-card .label {
-      font-size: 0.9rem;
-      color: #666;
-    }
-
-    .summary-card .value {
-      font-weight: bold;
-      font-size: 1.1rem;
-      margin-top: 0.3rem;
-    }
-
-    /* Botão principal */
-    #add-button {
-      display: block;
-      margin: 20px auto;
-      padding: 12px 20px;
-      background: #007bff;
+    .chip.active {
+      background: #2563eb;
       color: #fff;
+      font-weight: 600;
       border: none;
-      border-radius: 25px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
-    #add-button:hover { background: #0056b3; }
-
-    /* Cards de ativos */
-    #card-container {
-      margin-top: 1rem;
-      display: grid;
-      gap: 1rem;
+    ul#list { list-style:none; display:grid; gap:12px; padding:0; margin:0; }
+    .item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px; border-radius: 16px;
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+      gap: 16px;
+      border-left: 6px solid transparent;
     }
-
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 1rem;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      position: relative;
+    .done .title-text { text-decoration: line-through; opacity:.6; }
+    .title-text { font-weight:500; font-size:15px; flex:1; }
+    .left-meta {
+      display: flex; flex-direction: column; align-items: flex-start;
+      min-width: 90px; font-size: 13px; font-weight: 600;
     }
-
-    .delete-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: transparent;
-      border: none;
-      font-size: 18px;
-      color: #444;
-      cursor: pointer;
+    .task-time { color: #2563eb; }
+    .task-prio {
+      font-size: 12px; margin-top: 4px; padding: 2px 8px;
+      border-radius: 8px; text-transform: capitalize;
     }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: .6rem;
+    .task-prio.normal { background:#dbeafe; color:#1e3a8a; }
+    .task-prio.baixa { background:#f3f4f6; color:#4b5563; }
+    .task-prio.alta { background:#fee2e2; color:#b91c1c; font-weight:700; }
+    .item.alta { border-left-color: #ef4444; }
+    .actions button {
+      background:transparent; border:1px solid #2563eb; color:#2563eb;
+      padding:6px 12px; border-radius:8px; transition:.2s;
     }
-
-    .avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: #f1f5f9;
-      display:flex;align-items:center;justify-content:center;
-      font-weight:700;color:#007bff;
-      overflow:hidden;
-      border:2px solid #fff;
-      box-shadow: 0 1px 3px rgba(0,0,0,.08);
-      font-size: 1.1rem;
+    .actions button:hover { background:#2563eb; color:#fff; }
+    footer {
+      display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+      margin-top:20px; padding:16px;
+      background:rgba(255,255,255,0.7);
+      backdrop-filter:blur(12px);
+      border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.05);
     }
-    .avatar img { width:100%; height:100%; object-fit:cover; }
-
-    .name { font-weight: 700; font-size: 1.05rem; }
-
-    .kvs { margin-top: .4rem; }
-    .pill { font-weight: 700; }
-    .pos { color: #22c55e; }
-    .neg { color: #ef4444; }
-
-    /* Modal */
-    .modal {
-      position: fixed;
-      top: 0; left: 0; bottom: 0; right: 0;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-    }
-    .modal.open { display: flex; }
-
-    .modal-content {
-      background: white;
-      border-radius: 16px;
-      padding: 2rem;
-      width: 320px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-      text-align: left;
-    }
-    .modal-content h2 { margin: 0 0 .8rem; color:#007bff; }
-    .modal-content input {
-      width: 100%;
-      padding: 0.5rem;
-      margin: 0.4rem 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    .modal-content button {
-      margin-top: 1rem;
-      width: 100%;
-      padding: 0.6rem;
-      border: none;
-      border-radius: 8px;
-      background: #007bff;
-      color: #fff;
-      font-weight: bold;
-      cursor: pointer;
-    }
+    .empty { text-align:center; padding:20px; font-size:14px; color:#94a3b8; }
   </style>
 </head>
 <body>
-  <div class="app-container">
-    <!-- Header -->
-    <header class="header">
-      <div class="user-info">
-        <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" class="avatar-top" alt="user">
-        <span>Olá, Investidor</span>
-      </div>
-      <div class="menu"><i class="fas fa-bars"></i></div>
-    </header>
-
-    <!-- Saldo -->
-    <section class="saldo">
-      <p>Patrimônio Total</p>
-      <h1 id="patrimonioTotal">R$ 0,00</h1>
-    </section>
-
-    <!-- Nav Atalhos -->
-    <section class="atalhos">
-      <div class="atalho"><div class="icon"><i class="fas fa-coins"></i></div><span>Renda Fixa</span></div>
-      <div class="atalho"><div class="icon"><i class="fas fa-chart-line"></i></div><span>Ações</span></div>
-      <div class="atalho"><div class="icon"><i class="fab fa-bitcoin"></i></div><span>Cripto</span></div>
-      <div class="atalho"><div class="icon"><i class="fas fa-piggy-bank"></i></div><span>Poupança</span></div>
-    </section>
-
-    <!-- Resumo -->
-    <div class="summary-grid">
-      <div class="summary-card card-investido">
-        <div class="icon">💰</div>
-        <div class="label">Total Investido</div>
-        <div id="total-aplicado" class="value">R$ 0,00</div>
-      </div>
-
-      <div class="summary-card card-atual">
-        <div class="icon">💼</div>
-        <div class="label">Valor Atual</div>
-        <div id="total-atual" class="value">R$ 0,00</div>
-      </div>
-
-      <div class="summary-card card-lucro">
-        <div class="icon">📈</div>
-        <div class="label">Lucro / Prejuízo</div>
-        <div id="lucro" class="value">R$ 0,00</div>
-      </div>
-
-      <div class="summary-card card-rendimento">
-        <div class="icon">📊</div>
-        <div class="label">% Rendimento</div>
-        <div id="rendimento" class="value">0%</div>
+  <div class="app">
+    <div class="hero">
+      <div class="brand">
+        <div class="logo">✓</div>
+        <div>
+          <h1>Tarefas Diárias</h1>
+          <small id="todayLabel"></small>
+        </div>
       </div>
     </div>
 
-    <!-- Botão centralizado -->
-    <button id="add-button" onclick="abrirModal()">+ Adicionar Ativo</button>
-
-    <!-- Lista de Cards -->
-    <div id="card-container" class="grid">Carregando...</div>
-  </div>
-
-  <!-- Modal -->
-  <div class="modal" id="modal">
-    <div class="modal-content">
-      <h2 id="modal-title">Novo Ativo</h2>
-      <input type="text" id="input-nome" placeholder="Nome do ativo (ex: Neon, PagSeguro)" />
-      <input type="number" id="input-aplicado" placeholder="Valor aplicado" />
-      <input type="number" id="input-atual" placeholder="Valor atual" />
-      <input type="text" id="input-icon" placeholder="URL do ícone (opcional)" />
-      <button onclick="salvarAlteracoes()">Salvar</button>
+    <div class="controls">
+      <input type="date" id="datePicker">
+      <button id="btnHoje">Hoje</button>
+      <input type="time" id="timeInput">
+      <input type="text" id="taskInput" placeholder="Nova tarefa">
+      <select id="prio">
+        <option value="normal">Prioridade: Normal</option>
+        <option value="alta">Prioridade: Alta</option>
+        <option value="baixa">Prioridade: Baixa</option>
+      </select>
+      <button id="addBtn">Adicionar</button>
     </div>
+
+    <main>
+      <div class="filters">
+        <button class="chip active" data-filter="todas">Todas</button>
+        <button class="chip" data-filter="pendentes">Pendentes</button>
+        <button class="chip" data-filter="concluidas">Concluídas</button>
+        <button class="chip" data-filter="alta">Alta</button>
+      </div>
+      <div class="counters">
+        <span id="countPend">Pendentes: 0</span> • <span id="countAll">Total: 0</span>
+      </div>
+      <ul id="list"></ul>
+      <div class="empty" id="empty">Nenhuma tarefa.</div>
+      <footer>
+        <div><button id="clearDone">Limpar concluídas</button></div>
+        <div>
+          <button class="btn-danger" id="clearDay" style="background:#ef4444;color:#fff">Apagar dia</button>
+        </div>
+      </footer>
+    </main>
   </div>
+
+  <!-- Template -->
+  <template id="itemTmpl">
+    <li class="item">
+      <input type="checkbox" class="chk">
+      <div class="left-meta">
+        <span class="task-time"></span>
+        <span class="task-prio"></span>
+      </div>
+      <div class="title-text"></div>
+      <div class="actions">
+        <button class="editBtn">Editar</button>
+        <button class="delBtn">Excluir</button>
+      </div>
+    </li>
+  </template>
 
   <script>
-    // ======== CONFIG ========
-    const supabaseUrl = 'https://dylziaqkyavkfwjepqkp.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5bHppYXFreWF2a2Z3amVwcWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0NTc1OTgsImV4cCI6MjA2ODAzMzU5OH0.gy5jXxKOTgeCf0Rwq7ktLTz1pyoZ8dJjZOK9UB9rHCM';
-    const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-    const PCT = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 });
+    // 🔑 Configuração Supabase
+    const SUPABASE_URL = "https://dylziaqkyavkfwjepqkp.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5bHppYXFreWF2a2Z3amVwcWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0NTc1OTgsImV4cCI6MjA2ODAzMzU5OH0.gy5jXxKOTgeCf0Rwq7ktLTz1pyoZ8dJjZOK9UB9rHCM";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Mapeia nomes → domínios para tentar logo automático (Clearbit)
-    const domainByName = {
-      'neon': 'neon.com.br',
-      'nubank': 'nubank.com.br',
-      'pagseguro': 'pagseguro.com.br',
-      'pagbank': 'pagbank.com.br',
-      'mercado pago': 'mercadopago.com',
-      'mercadopago': 'mercadopago.com',
-      'itau': 'itau.com.br',
-      'bradesco': 'bradesco.com.br',
-      'santander': 'santander.com.br',
-      'banco do brasil': 'bb.com.br',
-      'bb': 'bb.com.br',
-      'caixa': 'caixa.gov.br',
-      'inter': 'inter.co',
-      'pagseguro uol': 'pagseguro.uol.com.br'
-    };
+    const state = { tasks:[], filter:'todas', date:new Date() }
+    const el = {
+      list: document.getElementById('list'),
+      empty: document.getElementById('empty'),
+      taskInput: document.getElementById('taskInput'),
+      timeInput: document.getElementById('timeInput'),
+      prio: document.getElementById('prio'),
+      addBtn: document.getElementById('addBtn'),
+      chips: Array.from(document.querySelectorAll('.chip')),
+      countAll: document.getElementById('countAll'),
+      countPend: document.getElementById('countPend'),
+      clearDone: document.getElementById('clearDone'),
+      clearDay: document.getElementById('clearDay'),
+      tmpl: document.getElementById('itemTmpl'),
+      datePicker: document.getElementById('datePicker'),
+      todayLabel: document.getElementById('todayLabel')
+    }
 
-    // ======== ESTADO ========
-    let bancoEditando = null;
-    let todos = [];
+    const fmtKey = d => d.toISOString().slice(0,10);
+    const fmtBR = d => d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 
-    // ======== HELPERS ========
-    function getLogo(nome, icone_url) {
-      if (icone_url && icone_url.trim()) return icone_url.trim();
-      if (!nome) return null;
-      const key = nome.toLowerCase().trim();
-      // procura por match direto ou parcial
-      let domain = domainByName[key];
-      if (!domain) {
-        for (const k in domainByName) {
-          if (key.includes(k)) { domain = domainByName[k]; break; }
-        }
+    async function load(){
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('date', fmtKey(state.date))
+        .order('created_at',{ascending:true});
+      if(error) console.error("Erro load:", error);
+      state.tasks = data || [];
+      render();
+    }
+
+    async function add(){
+      const text = el.taskInput.value.trim();
+      if(!text) return;
+      const task = {
+        text,
+        time: el.timeInput.value || null,
+        prio: el.prio.value,
+        done: false,
+        date: fmtKey(state.date)
+      };
+      const { data, error } = await supabase.from('tasks').insert([task]).select();
+      if(error){ console.error("Erro insert:", error); return; }
+      state.tasks.push(data[0]);
+      el.taskInput.value=""; el.timeInput.value="";
+      render();
+    }
+
+    async function toggleDone(task){
+      const { error } = await supabase.from('tasks').update({done:!task.done}).eq('id',task.id);
+      if(error) console.error("Erro update:", error);
+      task.done=!task.done; render();
+    }
+
+    async function remove(task){
+      const { error } = await supabase.from('tasks').delete().eq('id',task.id);
+      if(error) console.error("Erro delete:", error);
+      state.tasks=state.tasks.filter(t=>t.id!==task.id);
+      render();
+    }
+
+    async function edit(task){
+      const txt=prompt("Editar:",task.text);
+      if(txt){
+        const { error } = await supabase.from('tasks').update({text:txt}).eq('id',task.id);
+        if(error) console.error("Erro edit:", error);
+        task.text=txt; render();
       }
-      return domain ? `https://logo.clearbit.com/${domain}` : null;
     }
 
-    function avatarHTML(nome, icone_url) {
-      const logo = getLogo(nome, icone_url);
-      return logo
-        ? `<img src="${logo}" alt="${nome}" onerror="this.closest('.avatar').textContent='${(nome||'?').charAt(0).toUpperCase()}'; this.remove();">`
-        : (nome ? nome.charAt(0).toUpperCase() : '?');
+    async function clearDone(){
+      const ids=state.tasks.filter(t=>t.done).map(t=>t.id);
+      if(ids.length){
+        await supabase.from('tasks').delete().in('id',ids);
+        state.tasks=state.tasks.filter(t=>!t.done); render();
+      }
     }
 
-    // ======== RENDER ========
-    function renderCard({ id, nome, valor_aplicado, valor_atual, icone_url }) {
-      const dif = valor_atual - valor_aplicado;
-      const rend = valor_aplicado > 0 ? (dif / valor_aplicado) * 100 : 0;
-      const pos = dif >= 0;
-
-      return `
-        <div class="card">
-          <button class="delete-btn" onclick="excluirBanco(${id})" title="Excluir">×</button>
-
-          <div class="card-header" onclick="abrirModal(${id}, '${nome?.replace(/'/g,"\\'")}', ${valor_aplicado}, ${valor_atual}, '${(icone_url||'').replace(/'/g,"\\'")}')">
-            <div class="avatar">${avatarHTML(nome, icone_url)}</div>
-            <div class="name">${nome || '-'}</div>
-          </div>
-
-          <div class="kvs">
-            <p>Aplicado: <strong>${BRL.format(valor_aplicado)}</strong></p>
-            <p>Atual: <strong>${BRL.format(valor_atual)}</strong></p>
-            <p>Diferença: <span class="pill ${pos ? 'pos' : 'neg'}">${BRL.format(dif)}</span></p>
-            <p>Rendimento: <strong>${PCT.format(rend)}%</strong></p>
-          </div>
-        </div>
-      `;
+    async function clearDay(){
+      if(confirm("Apagar todas?")){
+        await supabase.from('tasks').delete().eq('date',fmtKey(state.date));
+        state.tasks=[]; render();
+      }
     }
 
-    function atualizarResumo(lista) {
-      const totalAplicado = lista.reduce((s, x) => s + (x.valor_aplicado||0), 0);
-      const totalAtual = lista.reduce((s, x) => s + (x.valor_atual||0), 0);
-      const lucro = totalAtual - totalAplicado;
-      const rendimento = totalAplicado > 0 ? (lucro / totalAplicado) * 100 : 0;
+    function render(){
+      el.todayLabel.textContent=fmtBR(state.date);
+      el.datePicker.value=fmtKey(state.date);
+      let view=[...state.tasks];
+      if(state.filter==='pendentes') view=view.filter(t=>!t.done);
+      if(state.filter==='concluidas') view=view.filter(t=>t.done);
+      if(state.filter==='alta') view=view.filter(t=>t.prio==='alta');
 
-      document.getElementById('total-aplicado').innerText = BRL.format(totalAplicado);
-      document.getElementById('total-atual').innerText = BRL.format(totalAtual);
-      document.getElementById('lucro').innerText = BRL.format(lucro);
-      document.getElementById('rendimento').innerText = PCT.format(rendimento) + '%';
-      document.getElementById('patrimonioTotal').innerText = BRL.format(totalAtual);
-    }
+      el.countAll.textContent=`Total: ${state.tasks.length}`;
+      el.countPend.textContent=`Pendentes: ${state.tasks.filter(t=>!t.done).length}`;
+      el.list.innerHTML="";
+      if(view.length===0) el.empty.style.display="block"; else el.empty.style.display="none";
 
-    // ======== CRUD ========
-    async function carregarTodosOsCards() {
-      const res = await fetch(`${supabaseUrl}/rest/v1/bancos?select=*`, {
-        headers: {
-          apikey: supabaseKey,
-          Authorization: `Bearer ${supabaseKey}`,
-          Accept: "application/json"
-        }
+      view.forEach(task=>{
+        const li=el.tmpl.content.firstElementChild.cloneNode(true);
+        li.querySelector('.chk').checked=task.done;
+        li.querySelector('.title-text').textContent=task.text;
+        li.querySelector('.task-time').textContent = task.time ? `⏰ ${task.time}` : "";
+        const prioEl = li.querySelector('.task-prio');
+        prioEl.textContent = task.prio;
+        prioEl.classList.add(task.prio);
+        if(task.prio === "alta") li.classList.add("alta");
+        if(task.done) li.classList.add('done');
+        li.querySelector('.chk').addEventListener('change',()=>toggleDone(task));
+        li.querySelector('.delBtn').addEventListener('click',()=>remove(task));
+        li.querySelector('.editBtn').addEventListener('click',()=>edit(task));
+        el.list.appendChild(li);
       });
-
-      todos = await res.json();
-      const container = document.getElementById('card-container');
-
-      if (!todos || !todos.length) {
-        container.innerHTML = '<div class="card">Nenhum ativo encontrado.</div>';
-        atualizarResumo([]);
-        return;
-      }
-
-      container.innerHTML = todos.map(renderCard).join('');
-      atualizarResumo(todos);
+      el.chips.forEach(c=>c.classList.toggle('active',c.dataset.filter===state.filter));
     }
 
-    function abrirModal(id = null, nome = '', aplicado = '', atual = '', icon = '') {
-      bancoEditando = id;
-      document.getElementById('modal-title').innerText = id ? 'Editar Ativo' : 'Novo Ativo';
-      document.getElementById('input-nome').value = nome || '';
-      document.getElementById('input-aplicado').value = aplicado || '';
-      document.getElementById('input-atual').value = atual || '';
-      document.getElementById('input-icon').value = icon || '';
-      document.getElementById('modal').classList.add('open');
-    }
+    // Eventos
+    el.addBtn.addEventListener('click',add);
+    el.taskInput.addEventListener('keydown',e=>{if(e.key==="Enter") add()});
+    el.clearDone.addEventListener('click',clearDone);
+    el.clearDay.addEventListener('click',clearDay);
+    el.chips.forEach(c=>c.addEventListener('click',()=>{state.filter=c.dataset.filter;render()}));
+    el.datePicker.addEventListener('change',e=>{state.date=new Date(e.target.value);load();});
+    document.getElementById('btnHoje').addEventListener('click',()=>{state.date=new Date();load();});
 
-    function fecharModal() {
-      document.getElementById('modal').classList.remove('open');
-    }
-
-    async function salvarAlteracoes() {
-      const nome = document.getElementById('input-nome').value.trim();
-      const aplicado = parseFloat(document.getElementById('input-aplicado').value);
-      const atual = parseFloat(document.getElementById('input-atual').value);
-      const icone = document.getElementById('input-icon').value.trim();
-
-      if (!nome || isNaN(aplicado) || isNaN(atual)) {
-        alert('Preencha nome, aplicado e atual corretamente.');
-        return;
-      }
-
-      const body = { nome, valor_aplicado: aplicado, valor_atual: atual, icone_url: icone || null };
-
-      const url = bancoEditando
-        ? `${supabaseUrl}/rest/v1/bancos?id=eq.${bancoEditando}`
-        : `${supabaseUrl}/rest/v1/bancos`;
-
-      const method = bancoEditando ? 'PATCH' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          apikey: supabaseKey,
-          Authorization: `Bearer ${supabaseKey}`,
-          Accept: "application/json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(body)
-      });
-
-      if (response.ok) {
-        fecharModal();
-        carregarTodosOsCards();
-      } else {
-        alert('Erro ao salvar');
-      }
-    }
-
-    async function excluirBanco(id) {
-      if (!confirm('Tem certeza que deseja excluir este ativo?')) return;
-
-      const response = await fetch(`${supabaseUrl}/rest/v1/bancos?id=eq.${id}`, {
-        method: 'DELETE',
-        headers: {
-          apikey: supabaseKey,
-          Authorization: `Bearer ${supabaseKey}`
-        }
-      });
-
-      if (response.ok) {
-        carregarTodosOsCards();
-      } else {
-        alert('Erro ao excluir');
-      }
-    }
-
-    // init
-    carregarTodosOsCards();
+    load();
   </script>
 </body>
 </html>
 
+
+</script>
+
+</body>
+</html>
 
 
